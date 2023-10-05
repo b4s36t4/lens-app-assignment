@@ -1,26 +1,27 @@
-import { createWeb3Modal, defaultWagmiConfig } from '@web3modal/wagmi/react'
+import { configureChains, createConfig, WagmiConfig } from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+import { InjectedConnector } from "wagmi/connectors/injected";
 
-import { WagmiConfig } from 'wagmi'
-import { arbitrum, mainnet } from 'wagmi/chains'
+import { polygonMumbai } from "wagmi/chains";
 
-const projectId = process.env.NEXT_PUBLIC_WC_ID || ''
+const { publicClient, chains, webSocketPublicClient } = configureChains(
+  [polygonMumbai],
+  [publicProvider()]
+);
 
-const metadata = {
-  name: 'Web3Modal',
-  description: 'Web3Modal Example',
-  url: 'https://web3modal.com',
-  icons: ['https://avatars.githubusercontent.com/u/37784886']
-}
-
-const chains = [mainnet, arbitrum]
-const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
-
-createWeb3Modal({ wagmiConfig, projectId, chains })
+const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors: [
+    new InjectedConnector({
+      options: {
+        shimDisconnect: false,
+      },
+    }),
+  ],
+  publicClient,
+  webSocketPublicClient,
+});
 
 export function WalletProvider({ children }) {
-  return (
-    <WagmiConfig config={wagmiConfig}>
-      {children}
-      </WagmiConfig>
-  )
+  return <WagmiConfig config={wagmiConfig}>{children}</WagmiConfig>;
 }
